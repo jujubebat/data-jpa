@@ -1,5 +1,8 @@
 package study.datajpa.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -30,12 +33,20 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     @Query("select new study.datajpa.dto.MemberDto(m.id, m.username, t.name) from Member m join m.team t")
     List<MemberDto> findMemberDto();
 
-    // SQL in절
+    //SQL in절
     @Query("select m from Member m where m.username in :names")
     List<Member> findByNames(@Param("names") Collection<String> names);
 
     List<Member> findListByUsername(String username);
+
     Member findMemberByUsername(String username);
+
     Optional<Member> findOptionalListByUsername(String username);
+
+    @Query(value = "select m from Member m left join m.team t",
+            countQuery = "select count(m.username) from Member m") // 이렇게 totalcount용 쿼리를 따로 정할 수 있다. 카운트 쿼리에서는 굳이 조인 안해도 되므로 성능 효율을 높일 수 있다.
+    Page<Member> findByAge(int age, Pageable pageable);
+
+    //Slice<Member> findByAgeSlice(int age, Pageable pageable);
 
 }
