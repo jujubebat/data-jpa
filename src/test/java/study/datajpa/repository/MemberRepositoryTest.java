@@ -14,6 +14,7 @@ import study.datajpa.entity.Team;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @SpringBootTest
 @Transactional
@@ -147,5 +148,28 @@ class MemberRepositoryTest {
         for (Member member : result) {
             System.out.println("member = " + member);
         }
+    }
+
+    @Test
+    public void returnType() {
+        Member m1 = new Member("AAA", 10);
+        Member m2 = new Member("BBB", 20);
+
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+
+        //List<Member> aaa = memberRepository.findListByUsername("AAA");
+        //Member aaa = memberRepository.findMemberByUsername("AAA");
+        //Optional<Member> aaa = memberRepository.findOptionalListByUsername("AAA");
+
+        List<Member> result = memberRepository.findListByUsername("????"); // 결과가 없으면 빈 컬렉션이 반환된다.
+        System.out.println("result.size() = " + result.size());
+
+        Member findMember = memberRepository.findMemberByUsername("????"); // 결과가 없으면 null이 날라온다.
+        System.out.println("findMember  = " + findMember);
+
+        Optional<Member> findOptionalMember = memberRepository.findOptionalListByUsername("????"); // 옵셔널일때 결과가 없을 경우.
+        System.out.println("findOptionalMember = " + findOptionalMember);
+
     }
 }
