@@ -231,4 +231,27 @@ class MemberRepositoryTest {
 //        assertThat(page.isFirst()).isTrue();
 //        assertThat(page.hasNext()).isTrue();
 //    }
+
+    @Test
+    public void bulkUpdate() {
+        //given
+        memberRepository.save(new Member("member1", 10));
+        memberRepository.save(new Member("member2", 19));
+        memberRepository.save(new Member("member3", 20));
+        memberRepository.save(new Member("member4", 21));
+        memberRepository.save(new Member("member5", 40));
+
+        //when
+        int resultCount = memberRepository.bulkAgePlus(20); // 영속성컨텍스트와 별개로 쿼리가 날라가는 것을 참고해야한다.
+
+        List<Member> result = memberRepository.findByUsername("member5");
+        Member member5 = result.get(0); // member5의 나이는? -> 영속성 컨텍스트속의 나이는 40살, DB의 속의 나이는 41살임
+        System.out.println("member5.getAge() = " +  member5.getAge());
+
+        // 위와 같은 불일치 문제 해결 법 : 벌크 연산후에 영속성 컨텍스트를 날리면 된다. flush와 clear를 하면 된다.
+        // 또는 레포지토리 메서드에 @Modifying(clearAutomatically = true)를 넣어주면 된다.
+
+        //then
+        assertThat(resultCount).isEqualTo(3);
+    }
 }
