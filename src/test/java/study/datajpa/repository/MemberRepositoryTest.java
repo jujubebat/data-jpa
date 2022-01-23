@@ -1,8 +1,9 @@
 package study.datajpa.repository;
 
-import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,8 @@ class MemberRepositoryTest {
     MemberRepository memberRepository;
     @Autowired
     TeamRepository teamRepository;
+    @PersistenceContext
+    EntityManager em;
 
     @Test
     public void testMember() {
@@ -246,12 +249,48 @@ class MemberRepositoryTest {
 
         List<Member> result = memberRepository.findByUsername("member5");
         Member member5 = result.get(0); // member5의 나이는? -> 영속성 컨텍스트속의 나이는 40살, DB의 속의 나이는 41살임
-        System.out.println("member5.getAge() = " +  member5.getAge());
+        System.out.println("member5.getAge() = " + member5.getAge());
 
         // 위와 같은 불일치 문제 해결 법 : 벌크 연산후에 영속성 컨텍스트를 날리면 된다. flush와 clear를 하면 된다.
         // 또는 레포지토리 메서드에 @Modifying(clearAutomatically = true)를 넣어주면 된다.
 
         //then
         assertThat(resultCount).isEqualTo(3);
+    }
+
+    @Test
+    public void findMemberLazy() {
+        //given
+        //member1 -> teamA
+        //member2 -> teamB
+
+        Team teamA = new Team("teamA");
+        Team teamB = new Team("teamB");
+        teamRepository.save(teamA);
+        teamRepository.save(teamB);
+
+        Member member1 = new Member("member1", 10, teamA);
+        Member member2 = new Member("member2", 10, teamB);
+        memberRepository.save(member1);
+        memberRepository.save(member2);
+
+        em.flush();
+        em.clear();
+
+        //when (N+1 문제)
+        //List<Member> members = memberRepository.findAll();
+
+        //when (fetch join으로 N+1 문제 해결)
+//        List<Member> members = memberRepository.findMemberFetchJoin();
+
+        //when (N+1 문제)
+        // @EntityGraph로 jpql안쓰고 fetch join 하기
+        List<Member> members = memberRepository.findAll();
+
+        for (Member member : members) {
+            System.out.println("    member.getUsername() = " + member.getUsername());
+            System.out.println("    member.getTeam().getClass() = " + member.getTeam().getClass());
+            System.out.println("    member.getTeam().getName() = " + member.getTeam().getName());
+        }
     }
 }

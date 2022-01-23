@@ -10,8 +10,6 @@ import javax.transaction.Transactional;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 @SpringBootTest
 @Transactional
 @Rollback(value = false)
@@ -21,17 +19,17 @@ class MemberTest {
     EntityManager em;
 
     @Test
-    public void testEntity(){
+    public void testEntity() {
         Team teamA = new Team("teamA");
         Team teamB = new Team("teamB");
 
         em.persist(teamA);
         em.persist(teamB);
 
-        Member member1 = new Member("member1", 10 ,teamA);
-        Member member2 = new Member("member2", 12 ,teamA);
-        Member member3 = new Member("member3", 30 ,teamB);
-        Member member4 = new Member("member4", 40 ,teamB);
+        Member member1 = new Member("member1", 10, teamA);
+        Member member2 = new Member("member2", 12, teamA);
+        Member member3 = new Member("member3", 30, teamB);
+        Member member4 = new Member("member4", 40, teamB);
 
         em.persist(member1);
         em.persist(member2);
