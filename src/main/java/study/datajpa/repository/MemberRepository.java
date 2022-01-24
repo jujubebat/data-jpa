@@ -3,14 +3,13 @@ package study.datajpa.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import study.datajpa.dto.MemberDto;
 import study.datajpa.entity.Member;
 
+import javax.persistence.LockModeType;
+import javax.persistence.QueryHint;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -58,17 +57,27 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     @Query("select m from Member m left join fetch m.team")
     List<Member> findMemberFetchJoin();
 
+    // jpql을 안쓰고도 n+1 문제해결
     @Override
-    @EntityGraph(attributePaths = {"team"} ) // jpql을 안쓰고도 n+1 문제해결
+    @EntityGraph(attributePaths = {"team"})
     List<Member> findAll();
 
-
-    @EntityGraph(attributePaths = {"team"} ) // jpql에 엔티티 그래프를 써서 fetch join 가능
+    // jpql에 엔티티 그래프를 써서 fetch join 가능
+    @EntityGraph(attributePaths = {"team"})
     @Query("select m from Member m")
     List<Member> findMemberEntityGraph();
 
-    @EntityGraph(attributePaths = {"team"} ) // 이렇게도 엔티티 그래프 적용가능
+    // 이렇게도 엔티티 그래프 적용가능
+    @EntityGraph(attributePaths = {"team"})
     List<Member> findEntityGraphByUsername(@Param("username") String username);
 
-    //@EntityGraph를 사용하면 fetch join을 쉽게할 수 있다.
+    //@EntityGraph를 사용하면 fetch join을 쉽게할 수 있다!
+
+    // JPA 쿼리 힌트 -> 변경감지 기능을 끈다. (읽기용으로만 사용할때 성능 최적화를 위해 쓴다.)
+    @QueryHints(value = @QueryHint(name = "org.hibernate.readOnly", value = "true"))
+    Member findReadOnlyByUsername(String username);
+
+    // select for update 날아가게 설정
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    List<Member> findLockByUsername(String username);
 }
