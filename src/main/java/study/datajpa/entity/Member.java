@@ -13,7 +13,7 @@ import lombok.*;
         name = "Member.findByUsername",
         query = "select m from Member m where m.username = :username" // jpql에 오류가 나면, 컴파일타임에 오류를 잡을 수 있다는 장점이 있다.
 )
-public class Member extends BaseEntity {
+public class Member extends BaseTimeEntity {
 
     @Id
     @GeneratedValue
